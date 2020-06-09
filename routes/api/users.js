@@ -14,13 +14,11 @@ const User = require('../../models/User');
 router.post(
   '/',
   [
-    check('name', 'Username is required')
-      .not()
-      .isEmpty(),
+    check('name', 'Username is required').not().isEmpty(),
     check('email', 'Please include a valid email').isEmail(),
     check('password', 'Please enter a password with 6 or more chars').isLength({
-      min: 6
-    })
+      min: 6,
+    }),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -44,14 +42,14 @@ router.post(
       const avatar = gravatar.url(email, {
         s: '200',
         r: 'pg',
-        d: 'mm'
+        d: 'mm',
       });
 
       user = new User({
         name,
         email,
         avatar,
-        password
+        password,
       });
 
       // Encrypt password
@@ -62,15 +60,15 @@ router.post(
       // Return JWT
       const payload = {
         user: {
-          id: user.id
-        }
+          id: user.id,
+        },
       };
 
       jwt.sign(
         payload,
         config.get('jwtSecret'),
         {
-          expiresIn: 360000
+          expiresIn: 360000,
         },
         (err, token) => {
           if (err) throw err;
@@ -82,8 +80,6 @@ router.post(
       console.error(err.message);
       res.status(500).send('Server error');
     }
-
-    // res.send('User route');
   }
 );
 
