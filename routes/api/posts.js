@@ -12,14 +12,7 @@ const User = require('../../models/User');
 // @access Private
 router.post(
   '/',
-  [
-    auth,
-    [
-      check('text', 'Text is required')
-        .not()
-        .isEmpty()
-    ]
-  ],
+  [auth, [check('text', 'Text is required').not().isEmpty()]],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -33,7 +26,7 @@ router.post(
         text: req.body.text,
         name: user.name,
         avatar: user.avatar,
-        user: req.user.id
+        user: req.user.id,
       });
 
       const post = await newPost.save();
@@ -118,7 +111,8 @@ router.put('/like/:id', auth, async (req, res) => {
     }
 
     if (
-      post.likes.filter(like => like.user.toString() === req.user.id).length > 0
+      post.likes.filter((like) => like.user.toString() === req.user.id).length >
+      0
     ) {
       return res.status(400).json({ msg: 'Post already liked' });
     }
@@ -126,12 +120,12 @@ router.put('/like/:id', auth, async (req, res) => {
     post.likes.unshift({ user: req.user.id });
 
     await post.save();
-    res.json(post.likes);
+    return res.json(post.likes);
   } catch (err) {
     console.error(err.message);
-    if (err.kind === 'ObjectId') {
-      return res.status(404).json({ msg: 'Post not found' });
-    }
+    // if (err.kind === 'ObjectId') {
+    //   return res.status(404).json({ msg: 'Post not found' });
+    // }
     res.status(500).send('Server Error');
   }
 });
@@ -147,14 +141,14 @@ router.put('/unlike/:id', auth, async (req, res) => {
     }
 
     if (
-      post.likes.filter(like => like.user.toString() === req.user.id).length ===
-      0
+      post.likes.filter((like) => like.user.toString() === req.user.id)
+        .length === 0
     ) {
       return res.status(400).json({ msg: 'Post has not yet been liked' });
     }
 
     const removeIndex = post.likes
-      .map(like => like.user.toString())
+      .map((like) => like.user.toString())
       .indexOf(req.user.id);
 
     post.likes.splice(removeIndex, 1);
@@ -174,14 +168,7 @@ router.put('/unlike/:id', auth, async (req, res) => {
 // @access Private
 router.post(
   '/comment/:id',
-  [
-    auth,
-    [
-      check('text', 'Text is required')
-        .not()
-        .isEmpty()
-    ]
-  ],
+  [auth, [check('text', 'Text is required').not().isEmpty()]],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -196,7 +183,7 @@ router.post(
         text: req.body.text,
         name: user.name,
         avatar: user.avatar,
-        user: req.user.id
+        user: req.user.id,
       };
 
       post.comments.unshift(newComment);
@@ -223,7 +210,7 @@ router.delete('/comment/:id/:comment_id', auth, async (req, res) => {
 
     // Pull out comment
     const comment = post.comments.find(
-      comment => comment.id === req.params.comment_id
+      (comment) => comment.id === req.params.comment_id
     );
 
     if (!comment) {
@@ -235,7 +222,7 @@ router.delete('/comment/:id/:comment_id', auth, async (req, res) => {
     }
 
     const removeIndex = post.comments
-      .map(comment => comment.user.toString())
+      .map((comment) => comment.user.toString())
       .indexOf(req.user.id);
 
     post.comments.splice(removeIndex, 1);
